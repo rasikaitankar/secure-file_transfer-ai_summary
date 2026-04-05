@@ -2,11 +2,11 @@
 app.py — Secure Cloud-Based File Sharing System
 ================================================
 NEW in this version:
-  ✅ Login system  — Flask sessions + cookies (POST /login, GET /logout)
-  ✅ GET /stats    — server statistics endpoint
-  ✅ Network delay — simulate latency (GET /simulate-delay/<ms>)
-  ✅ Google Drive  — optional cloud storage toggle (ENABLE_DRIVE flag)
-  ✅ HTTPS ready   — run behind ngrok for TLS
+ Login system  — Flask sessions + cookies (POST /login, GET /logout)
+ GET /stats    — server statistics endpoint
+ Network delay — simulate latency (GET /simulate-delay/<ms>)
+ Google Drive  — optional cloud storage toggle (ENABLE_DRIVE flag)
+ HTTPS ready   — run behind ngrok for TLS
 
 NETWORKING CONCEPTS DEMONSTRATED:
   • Client-Server Architecture
@@ -37,7 +37,7 @@ if ENABLE_DRIVE:
     try:
         from utils.drive import upload_to_drive, download_from_drive
     except ImportError:
-        print("[DRIVE] ⚠️  drive.py not found — disabling Google Drive.")
+        print("[DRIVE] drive.py not found — disabling Google Drive.")
         ENABLE_DRIVE = False
 
 # ── App Configuration ──────────────────────────────────────────────────────────
@@ -112,7 +112,7 @@ def seed_users():
             changed = True
     if changed:
         save_users(users)
-        print("[AUTH] ✅ Demo users seeded: alice, bob, admin, user1, user2")
+        print("[AUTH] Demo users seeded: alice, bob, admin, user1, user2")
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ def login():
       POST /login → server validates → session['username'] = 'alice'
                  → Flask sets: Set-Cookie: session=<signed_token>; HttpOnly; Path=/
       Next request → browser sends: Cookie: session=<signed_token>
-                 → Flask reads session → username = 'alice'  ✅
+                 → Flask reads session → username = 'alice' 
     """
     if request.method == "GET":
         return render_template("login.html")
@@ -271,9 +271,9 @@ def upload_file():
     if ENABLE_DRIVE:
         try:
             drive_file_id = upload_to_drive(encrypted_path, stored_name + ".enc")
-            print(f"[DRIVE] ✅ Uploaded to Google Drive: {drive_file_id}")
+            print(f"[DRIVE] Uploaded to Google Drive: {drive_file_id}")
         except Exception as e:
-            print(f"[DRIVE] ⚠️  Drive upload failed: {e}")
+            print(f"[DRIVE] Drive upload failed: {e}")
 
     # AI Summary
     try:
@@ -376,7 +376,7 @@ def download_file(file_id):
     if ENABLE_DRIVE and entry.get("drive_file_id"):
         try:
             download_from_drive(entry["drive_file_id"], encrypted_path)
-            print(f"[DRIVE] ✅ Downloaded from Google Drive: {entry['drive_file_id']}")
+            print(f"[DRIVE] Downloaded from Google Drive: {entry['drive_file_id']}")
         except Exception as e:
             return jsonify({"error": f"Drive download failed: {e}"}), 500
 
@@ -541,10 +541,10 @@ def server_error(e):
 if __name__ == "__main__":
     seed_users()
     print("=" * 65)
-    print("  🔒 Secure File Share Server v2.0")
-    print("  📡 HTTP  → http://localhost:5000")
-    print("  🔐 HTTPS → run: ngrok http 5000")
-    print("  👤 Demo users: alice/alice123  bob/bob123  admin/admin123")
-    print("  ☁️  Google Drive:", "ENABLED" if ENABLE_DRIVE else "DISABLED (local storage)")
+    print(" Secure File Share Server v2.0")
+    print(" HTTP  → http://localhost:5000")
+    print(" HTTPS → run: ngrok http 5000")
+    print(" Demo users: alice/alice123  bob/bob123  admin/admin123")
+    print(" Google Drive:", "ENABLED" if ENABLE_DRIVE else "DISABLED (local storage)")
     print("=" * 65)
     app.run(debug=True, host="0.0.0.0", port=5000)

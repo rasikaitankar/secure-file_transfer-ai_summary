@@ -38,15 +38,15 @@ def _get_summarizer():
 
     try:
         from transformers import pipeline
-        print("[AI] 🤖 Loading facebook/bart-large-cnn summarization model…")
+        print("[AI] Loading facebook/bart-large-cnn summarization model…")
         _summarizer = pipeline(
             "summarization",
             model="facebook/bart-large-cnn",
             device=-1   # -1 = CPU; change to 0 for GPU
         )
-        print("[AI] ✅ Model loaded successfully.")
+        print("[AI] Model loaded successfully.")
     except Exception as e:
-        print(f"[AI] ⚠️  Could not load model ({e}). Using extractive fallback.")
+        print(f"[AI] Could not load model ({e}). Using extractive fallback.")
         _USE_MOCK = True
 
     return _summarizer
@@ -141,11 +141,11 @@ def summarize_file(filepath: str) -> str:
                 )
                 summary = result[0]["summary_text"]
             except Exception as e:
-                print(f"[AI] ⚠️  Summarization error: {e}. Using fallback.")
+                print(f"[AI] Summarization error: {e}. Using fallback.")
                 summary = _extractive_summary(truncated)
 
     if was_truncated:
         summary += " [Note: file was truncated to first 3000 characters for summarization.]"
 
-    print(f"[AI] ✅ Summary generated ({len(summary)} chars)")
+    print(f"[AI] Summary generated ({len(summary)} chars)")
     return summary

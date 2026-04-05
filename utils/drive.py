@@ -29,7 +29,7 @@ try:
     PYDRIVE_AVAILABLE = True
 except ImportError:
     PYDRIVE_AVAILABLE = False
-    print("[DRIVE] ⚠️  PyDrive not installed. Run: pip install PyDrive")
+    print("[DRIVE] PyDrive not installed. Run: pip install PyDrive")
 
 
 # Shared Drive client (initialized once)
@@ -65,7 +65,7 @@ def _get_drive():
     gauth.SaveCredentialsFile("models/drive_credentials.json")
 
     _drive = GoogleDrive(gauth)
-    print("[DRIVE] ✅ Authenticated with Google Drive")
+    print("[DRIVE] Authenticated with Google Drive")
     return _drive
 
 
@@ -81,7 +81,7 @@ def _get_or_create_folder(drive) -> str:
         'mimeType': 'application/vnd.google-apps.folder'
     })
     folder.Upload()
-    print(f"[DRIVE] ✅ Created folder '{DRIVE_FOLDER_NAME}' on Google Drive")
+    print(f"[DRIVE] Created folder '{DRIVE_FOLDER_NAME}' on Google Drive")
     return folder['id']
 
 
@@ -111,7 +111,7 @@ def upload_to_drive(local_path: str, filename: str) -> str:
     gfile.SetContentFile(local_path)
     gfile.Upload()
 
-    print(f"[DRIVE] ✅ Uploaded '{filename}' to Google Drive (ID: {gfile['id']})")
+    print(f"[DRIVE] Uploaded '{filename}' to Google Drive (ID: {gfile['id']})")
     return gfile['id']
 
 
@@ -130,4 +130,4 @@ def download_from_drive(drive_file_id: str, local_path: str) -> None:
     drive = _get_drive()
     gfile = drive.CreateFile({'id': drive_file_id})
     gfile.GetContentFile(local_path)
-    print(f"[DRIVE] ✅ Downloaded file ID '{drive_file_id}' → '{local_path}'")
+    print(f"[DRIVE] Downloaded file ID '{drive_file_id}' → '{local_path}'")

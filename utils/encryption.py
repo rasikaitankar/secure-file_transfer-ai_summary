@@ -96,7 +96,7 @@ def encrypt_file(input_path: str, output_path: str, filename: str) -> str:
     keys[filename] = base64.b64encode(key).decode("utf-8")
     _save_keys(keys)
 
-    print(f"[ENCRYPTION] ✅ File '{filename}' encrypted → '{output_path}'")
+    print(f"[ENCRYPTION] File '{filename}' encrypted → '{output_path}'")
     print(f"[ENCRYPTION]    Key stored. IV length: {len(iv)} bytes | Ciphertext length: {len(ciphertext)} bytes")
     return filename
 
@@ -117,7 +117,7 @@ def decrypt_file(encrypted_path: str, output_path: str, filename: str) -> bool:
     # Step 1 – Get key
     keys = _load_keys()
     if filename not in keys:
-        print(f"[ENCRYPTION] ❌ Key not found for '{filename}'")
+        print(f"[ENCRYPTION] Key not found for '{filename}'")
         return False
 
     key = base64.b64decode(keys[filename])
@@ -147,5 +147,5 @@ def decrypt_file(encrypted_path: str, output_path: str, filename: str) -> bool:
     with open(output_path, "wb") as f:
         f.write(plaintext)
 
-    print(f"[ENCRYPTION] ✅ File '{filename}' decrypted → '{output_path}'")
+    print(f"[ENCRYPTION] File '{filename}' decrypted → '{output_path}'")
     return True
