@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔒 Secure File Share — AES + AI + HTTP</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+<!-- ── Navbar ──────────────────────────────────────────────────────────────── -->
+<nav class="navbar navbar-expand-lg px-4 py-2">
+  <span class="navbar-brand">🔒 SecureFileShare</span>
+  <div class="ms-auto d-flex gap-2 align-items-center flex-wrap">
+    <span class="badge-tcp">TCP/IP</span>
+    <span class="badge-http">HTTP REST</span>
+    <span class="badge-aes">AES-256</span>
+
+    {% if logged_in %}
+    <!-- Session indicator -->
+    <span class="session-badge">🍪 Session: <strong>{{ username }}</strong></span>
+    <button class="btn btn-sm btn-outline-secondary" onclick="doLogout()">Logout</button>
+    {% else %}
+    <a href="/login" class="btn btn-sm btn-primary">🔑 Login</a>
+    {% endif %}
+  </div>
+</nav>
+
+{% if not logged_in %}
+<!-- ── Auth Banner ──────────────────────────────────────────────────────────── -->
+<div class="alert alert-warning mx-4 mt-3 py-2" style="font-size: 0.85rem;">
+  ⚠️ You are not logged in. <a href="/login" class="alert-link">Login here</a> to upload or download files.
+  <span class="text-muted ms-2" style="font-size:0.78rem;">Demo users: alice/alice123 · bob/bob123</span>
+</div>
+{% endif %}
+
+<!-- ── Main Container ──────────────────────────────────────────────────────── -->
+<div class="container-fluid px-4 py-3" style="max-width: 1200px;">
+
+  <!-- Mode Toggle -->
+  <div class="text-center mb-3">
+    <div class="mode-toggle">
+      <button class="btn active" id="btnSender"   onclick="setMode('sender')">📤 Sender Mode</button>
+      <button class="btn"        id="btnReceiver" onclick="setMode('receiver')">📥 Receiver Mode</button>
+      <button class="btn"        id="btnStats"    onclick="setMode('stats')">📊 Stats &amp; Tools</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- SENDER PANEL                                                          -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div id="senderPanel">
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header">📤 Upload &amp; Send File</div>
+          <div class="card-body p-4">
+            <form id="uploadForm">
+              <div class="mb-3">
+                <div id="dropZone">
+                  <div class="drop-icon">📂</div>
+                  <p>Drag &amp; drop a file here, or click to choose</p>
+                  <div id="fileLabel">No file selected</div>
+                </div>
+                <input type="file" id="fileInput" class="d-none" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Your Username (Sender)</label>
+                <input type="text" class="form-control" id="senderId"
+                       value="{{ username }}" placeholder="e.g. alice" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Receiver Username *</label>
+                <input type="text" class="form-control" id="receiverId" placeholder="e.g. bob" required />
+              </div>
+              <div id="progressWrap" class="mb-3 d-none">
+                <div class="progress">
+                  <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%">0%</div>
+                </div>
+                <small class="text-muted" style="font-size:0.72rem;">Uploading → Encrypting → Summarizing…</small>
+              </div>
+              <div id="uploadStatus"></div>
+              <button type="submit" class="btn btn-primary w-100">🔒 Encrypt &amp; Upload</button>
+            </form>
+
+            <div id="uploadResult" class="result-box mt-3 d-none">
+              <div class="row g-2 mb-2">
+                <div class="col-6"><div class="result-label">File Name</div><div class="result-value" id="resFileName">—</div></div>
+                <div class="col-6"><div class="result-label">File ID</div><div class="result-value" id="resFileId">—</div></div>
+                <div class="col-6"><div class="result-label">Receiver</div><div class="result-value" id="resReceiver">—</div></div>
+                <div class="col-6"><div class="result-label">Storage</div><div class="result-value" id="resStorage">—</div></div>
+              </div>
+              <div class="result-label">🤖 AI Summary</div>
+              <div class="summary-value" id="resSummary">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="row g-3 mb-4">
+          <div class="col-6"><div class="concept-card"><div class="concept-icon">🌐</div><h6>HTTP POST</h6><p>Browser sends multipart/form-data to Flask server at <code>/upload</code>. Server responds with JSON.</p></div></div>
+          <div class="col-6"><div class="concept-card"><div class="concept-icon">🔐</div><h6>AES-256-CBC</h6><p>File bytes encrypted on the server. 256-bit key + random IV. Stored as .enc file.</p></div></div>
+          <div class="col-6"><div class="concept-card"><div class="concept-icon">🤖</div><h6>AI Summary</h6><p>HuggingFace BART model generates summary server-side. Client receives text in JSON.</p></div></div>
+          <div class="col-6"><div class="concept-card"><div class="concept-icon">🍪</div><h6>Sessions</h6><p>Your login creates a signed session cookie. Server reads it to know who you are.</p></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>📡 Live Network Log</span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="checkHealth()">Ping</button>
+          </div>
+          <div class="card-body p-2">
+            <div class="network-log-container" id="networkLog">
+              <div class="log-line log-pending"><span class="log-time">--:--:--</span><span class="log-method">--</span><span class="log-url">Waiting for activity…</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- RECEIVER PANEL                                                        -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div id="receiverPanel" class="d-none">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="card">
+          <div class="card-header">📥 Fetch My Files</div>
+          <div class="card-body p-4">
+            <form id="fetchForm">
+              <div class="mb-3">
+                <label class="form-label">Your Username (Receiver)</label>
+                <input type="text" class="form-control" id="fetchReceiverId"
+                       value="{{ username }}" placeholder="e.g. bob" required />
+              </div>
+              <div id="fetchStatus"></div>
+              <button type="submit" class="btn btn-primary w-100">🔍 Find My Files</button>
+            </form>
+            <hr style="border-color:var(--border); margin:20px 0;"/>
+            <div class="concept-card">
+              <div class="concept-icon">🔄</div>
+              <h6>Request-Response Cycle</h6>
+              <p>
+                <strong>1.</strong> Browser → <code>GET /files/&lt;id&gt;</code> → Server<br/>
+                <strong>2.</strong> Server checks session cookie → verifies authorization<br/>
+                <strong>3.</strong> Returns JSON list of your files<br/>
+                <strong>4.</strong> Click Download → <code>GET /download/&lt;id&gt;</code><br/>
+                <strong>5.</strong> Server decrypts → streams to browser
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="card mt-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>📡 Live Network Log</span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="checkHealth()">Ping</button>
+          </div>
+          <div class="card-body p-2">
+            <div class="network-log-container" id="networkLogReceiver">
+              <div class="log-line log-pending"><span class="log-time">--:--:--</span><span class="log-method">--</span><span class="log-url">Waiting for activity…</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <div id="fileListWrap" class="d-none">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>📋 Files Ready to Download</span>
+              <span class="badge" style="background:var(--surface2);color:var(--text-muted);font-family:var(--mono);font-size:0.75rem;" id="fileCount">0 files</span>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead><tr><th>File</th><th>From</th><th>Uploaded</th><th>Size</th><th>Storage</th><th>Actions</th></tr></thead>
+                  <tbody id="fileListBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-header">🔗 TCP/IP Layer Model — How Your File Travels</div>
+          <div class="card-body p-3">
+            <div class="row g-2 text-center">
+              <div class="col-12"><div style="background:rgba(88,166,255,0.1);border:1px solid var(--accent);border-radius:8px;padding:10px;"><strong style="color:var(--accent);font-size:0.85rem;">Application Layer (HTTP)</strong><div style="font-size:0.75rem;color:var(--text-muted);">Flask handles GET/POST · JSON responses · Status codes 200/400/401/403/404/500</div></div></div>
+              <div class="col-12 text-center" style="font-size:0.7rem;color:var(--text-muted);">▼</div>
+              <div class="col-12"><div style="background:rgba(63,185,80,0.1);border:1px solid var(--accent2);border-radius:8px;padding:10px;"><strong style="color:var(--accent2);font-size:0.85rem;">Transport Layer (TCP)</strong><div style="font-size:0.75rem;color:var(--text-muted);">Splits file into segments · Guarantees delivery · Port 5000</div></div></div>
+              <div class="col-12 text-center" style="font-size:0.7rem;color:var(--text-muted);">▼</div>
+              <div class="col-12"><div style="background:rgba(240,136,62,0.1);border:1px solid var(--accent3);border-radius:8px;padding:10px;"><strong style="color:var(--accent3);font-size:0.85rem;">Network Layer (IP)</strong><div style="font-size:0.75rem;color:var(--text-muted);">Routes packets · 127.0.0.1 locally · Public IP via ngrok (HTTPS)</div></div></div>
+              <div class="col-12 text-center" style="font-size:0.7rem;color:var(--text-muted);">▼</div>
+              <div class="col-12"><div style="background:rgba(139,148,158,0.1);border:1px solid var(--border);border-radius:8px;padding:10px;"><strong style="color:var(--text-muted);font-size:0.85rem;">Data Link Layer (Ethernet/Wi-Fi)</strong><div style="font-size:0.75rem;color:var(--text-muted);">Physical transmission · MAC addresses</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- STATS & TOOLS PANEL (NEW)                                             -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div id="statsPanel" class="d-none">
+    <div class="row g-4">
+
+      <!-- Server Stats -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>📊 Server Statistics (GET /stats)</span>
+            <button class="btn btn-sm btn-primary" onclick="loadStats()">Refresh</button>
+          </div>
+          <div class="card-body p-3">
+            <div id="statsGrid" class="row g-2">
+              <div class="col-12 text-center text-muted" style="font-size:0.85rem;padding:20px;">Click Refresh to load stats</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ngrok / HTTPS -->
+        <div class="card mt-4">
+          <div class="card-header">🔐 HTTPS via ngrok</div>
+          <div class="card-body p-3">
+            <p style="font-size:0.85rem;color:var(--text-muted);">ngrok creates a public HTTPS tunnel to your local Flask server. This demonstrates TLS/SSL over HTTP.</p>
+            <div class="mb-2" style="font-family:var(--mono);font-size:0.78rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="color:var(--text-muted);"># Step 1: Install ngrok</div>
+              <div style="color:var(--accent2);">pip install pyngrok</div>
+              <br/>
+              <div style="color:var(--text-muted);"># Step 2: Run in a new terminal</div>
+              <div style="color:var(--accent2);">ngrok http 5000</div>
+              <br/>
+              <div style="color:var(--text-muted);"># Or use our helper script</div>
+              <div style="color:var(--accent2);">python ngrok_start.py</div>
+            </div>
+            <div style="font-size:0.78rem;color:var(--text-muted);">ngrok gives you a URL like <code>https://abc123.ngrok.io</code> — full HTTPS with valid TLS certificate. Anyone on the internet can access your server securely.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Network Delay Simulator -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">⏱️ Network Latency Simulator</div>
+          <div class="card-body p-3">
+            <p style="font-size:0.85rem;color:var(--text-muted);">Simulate slow network conditions. Adds artificial delay to every server request — demonstrates how latency affects file transfer.</p>
+
+            <div class="mb-3">
+              <label class="form-label">Delay Amount</label>
+              <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-sm btn-outline-secondary delay-btn" onclick="setDelay(0)">0ms (Off)</button>
+                <button class="btn btn-sm btn-outline-secondary delay-btn" onclick="setDelay(200)">200ms</button>
+                <button class="btn btn-sm btn-outline-secondary delay-btn" onclick="setDelay(500)">500ms</button>
+                <button class="btn btn-sm btn-outline-secondary delay-btn" onclick="setDelay(1000)">1s</button>
+                <button class="btn btn-sm btn-outline-secondary delay-btn" onclick="setDelay(2000)">2s</button>
+                <button class="btn btn-sm btn-outline-secondary delay-btn" onclick="setDelay(3000)">3s</button>
+              </div>
+            </div>
+
+            <div id="delayStatus" class="d-none result-box"></div>
+
+            <div class="concept-card mt-3">
+              <div class="concept-icon">📡</div>
+              <h6>Network Latency Concept</h6>
+              <p>Latency = time for a packet to travel from source to destination. Affected by: distance, router hops, congestion. CDNs reduce latency by placing servers close to users.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sessions & Cookies Demo -->
+        <div class="card mt-4">
+          <div class="card-header">🍪 Sessions &amp; Cookies Demo</div>
+          <div class="card-body p-3">
+            <p style="font-size:0.85rem;color:var(--text-muted);">Click the button to call <code>GET /me</code> — the server reads your session cookie and returns your login info without you re-entering credentials.</p>
+            <button class="btn btn-sm btn-outline-info w-100 mb-2" onclick="showMe()">🔍 Check My Session (GET /me)</button>
+            <div id="meResult"></div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:10px;">
+              Open Chrome DevTools → Application → Cookies → localhost:5000<br/>
+              You'll see the <code>session</code> cookie Flask set after you logged in.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!-- END STATS PANEL -->
+
+</div>
+
+<div class="footer mt-4">
+  Secure Cloud-Based File Sharing System · AES-256-CBC · HTTP/TCP · Sessions · HuggingFace BART · Flask v2.0
+</div>
+
+<!-- Summary Modal -->
+<div class="modal fade" id="summaryModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="summaryModalLabel">📝 AI Summary</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="summaryModalBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

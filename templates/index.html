@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔒 Secure File Share — AES + AI + HTTP</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+<!-- ── Navbar ──────────────────────────────────────────────────────────────── -->
+<nav class="navbar navbar-expand-lg px-4 py-2">
+  <span class="navbar-brand">🔒 SecureFileShare</span>
+  <div class="ms-auto d-flex gap-2 align-items-center">
+    <span class="badge-tcp">TCP/IP</span>
+    <span class="badge-http">HTTP REST</span>
+    <span class="badge-aes">AES-256</span>
+  </div>
+</nav>
+
+<!-- ── Main Container ──────────────────────────────────────────────────────── -->
+<div class="container-fluid px-4 py-4" style="max-width: 1200px;">
+
+  <!-- Mode Toggle -->
+  <div class="text-center">
+    <div class="mode-toggle">
+      <button class="btn active" id="btnSender">📤 Sender Mode</button>
+      <button class="btn" id="btnReceiver">📥 Receiver Mode</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- SENDER PANEL                                                          -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div id="senderPanel">
+    <div class="row g-4">
+
+      <!-- Upload Form -->
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header">📤 Upload &amp; Send File</div>
+          <div class="card-body p-4">
+            <form id="uploadForm">
+
+              <!-- Drop Zone -->
+              <div class="mb-3">
+                <div id="dropZone">
+                  <div class="drop-icon">📂</div>
+                  <p>Drag &amp; drop a file here, or click to choose</p>
+                  <div id="fileLabel">No file selected</div>
+                </div>
+                <input type="file" id="fileInput" class="d-none" />
+              </div>
+
+              <!-- Sender ID -->
+              <div class="mb-3">
+                <label class="form-label" for="senderId">Your Username (Sender)</label>
+                <input type="text" class="form-control" id="senderId" placeholder="e.g. alice" />
+              </div>
+
+              <!-- Receiver ID -->
+              <div class="mb-3">
+                <label class="form-label" for="receiverId">Receiver Username *</label>
+                <input type="text" class="form-control" id="receiverId" placeholder="e.g. bob" required />
+                <div class="form-text text-muted" style="font-size:0.75rem;">
+                  The receiver will use this username to fetch their files.
+                </div>
+              </div>
+
+              <!-- Progress -->
+              <div id="progressWrap" class="mb-3 d-none">
+                <div class="progress">
+                  <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%">0%</div>
+                </div>
+                <small class="text-muted" style="font-size:0.72rem;">Uploading → Encrypting → Summarizing…</small>
+              </div>
+
+              <div id="uploadStatus"></div>
+
+              <button type="submit" class="btn btn-primary w-100">
+                🔒 Encrypt &amp; Upload
+              </button>
+            </form>
+
+            <!-- Upload Result -->
+            <div id="uploadResult" class="result-box mt-3 d-none">
+              <div class="row g-2 mb-2">
+                <div class="col-6">
+                  <div class="result-label">File Name</div>
+                  <div class="result-value" id="resFileName">—</div>
+                </div>
+                <div class="col-6">
+                  <div class="result-label">File ID</div>
+                  <div class="result-value" id="resFileId">—</div>
+                </div>
+                <div class="col-6">
+                  <div class="result-label">Receiver</div>
+                  <div class="result-value" id="resReceiver">—</div>
+                </div>
+                <div class="col-6">
+                  <div class="result-label">Size</div>
+                  <div class="result-value" id="resFileSize">—</div>
+                </div>
+              </div>
+              <div class="result-label">🤖 AI Summary</div>
+              <div class="summary-value" id="resSummary">—</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Networking Info + Log -->
+      <div class="col-lg-6">
+        <!-- Concept Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <div class="concept-card">
+              <div class="concept-icon">🌐</div>
+              <h6>HTTP POST</h6>
+              <p>Browser sends multipart/form-data to Flask server at <code>/upload</code>. Server responds with JSON.</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="concept-card">
+              <div class="concept-icon">🔐</div>
+              <h6>AES-256-CBC</h6>
+              <p>File bytes are encrypted on the server using a 256-bit key before being saved to disk.</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="concept-card">
+              <div class="concept-icon">🤖</div>
+              <h6>AI Summary</h6>
+              <p>HuggingFace BART model reads the file and generates a smart summary — server-side.</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="concept-card">
+              <div class="concept-icon">📦</div>
+              <h6>TCP/IP Packets</h6>
+              <p>File is split into TCP segments during transmission. IP layer handles routing to server.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Network Log (Sender) -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>📡 Live Network Log <small class="text-muted">(like DevTools → Network tab)</small></span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="checkHealth()">Ping</button>
+          </div>
+          <div class="card-body p-2">
+            <div class="network-log-container" id="networkLog">
+              <div class="log-line log-pending">
+                <span class="log-time">--:--:--</span>
+                <span class="log-method">--</span>
+                <span class="log-url">Waiting for activity…</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- END SENDER PANEL -->
+
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- RECEIVER PANEL                                                        -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div id="receiverPanel" class="d-none">
+    <div class="row g-4">
+
+      <!-- Fetch Form -->
+      <div class="col-lg-5">
+        <div class="card">
+          <div class="card-header">📥 Fetch My Files</div>
+          <div class="card-body p-4">
+            <form id="fetchForm">
+              <div class="mb-3">
+                <label class="form-label" for="fetchReceiverId">Your Username (Receiver)</label>
+                <input type="text" class="form-control" id="fetchReceiverId" placeholder="e.g. bob" required />
+                <div class="form-text text-muted" style="font-size:0.75rem;">
+                  Enter the username the sender addressed files to.
+                </div>
+              </div>
+              <div id="fetchStatus"></div>
+              <button type="submit" class="btn btn-primary w-100">🔍 Find My Files</button>
+            </form>
+
+            <hr style="border-color: var(--border); margin: 20px 0;" />
+
+            <!-- Networking concept for receiver -->
+            <div class="concept-card">
+              <div class="concept-icon">🔄</div>
+              <h6>Request-Response Cycle</h6>
+              <p>
+                <strong>1.</strong> Browser → <code>GET /files/&lt;id&gt;</code> → Server<br/>
+                <strong>2.</strong> Server looks up metadata → returns JSON list<br/>
+                <strong>3.</strong> You click Download → <code>GET /download/&lt;id&gt;</code><br/>
+                <strong>4.</strong> Server decrypts file → streams bytes to browser
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Network Log (Receiver) — fixed unique ID -->
+        <div class="card mt-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>📡 Live Network Log <small class="text-muted">(GET requests shown here)</small></span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="checkHealth()">Ping</button>
+          </div>
+          <div class="card-body p-2">
+            <div class="network-log-container" id="networkLogReceiver">
+              <div class="log-line log-pending">
+                <span class="log-time">--:--:--</span>
+                <span class="log-method">--</span>
+                <span class="log-url">Waiting for activity…</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- File List + TCP/IP Diagram -->
+      <div class="col-lg-7">
+        <div id="fileListWrap" class="d-none">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>📋 Files Ready to Download</span>
+              <span class="badge" style="background: var(--surface2); color: var(--text-muted); font-family: var(--mono); font-size: 0.75rem;" id="fileCount">0 files</span>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead>
+                    <tr>
+                      <th>File</th>
+                      <th>From</th>
+                      <th>Uploaded</th>
+                      <th>Size</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fileListBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TCP/IP Layer Diagram -->
+        <div class="card mt-4">
+          <div class="card-header">🔗 TCP/IP Layer Model — How Your File Travels</div>
+          <div class="card-body p-3">
+            <div class="row g-2 text-center">
+              <div class="col-12">
+                <div style="background: rgba(88,166,255,0.1); border: 1px solid var(--accent); border-radius: 8px; padding: 10px;">
+                  <strong style="color: var(--accent); font-size: 0.85rem;">Application Layer (HTTP)</strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Flask handles GET/POST · JSON responses · Status codes 200/400/500</div>
+                </div>
+              </div>
+              <div class="col-12 text-center" style="font-size: 0.7rem; color: var(--text-muted);">▼</div>
+              <div class="col-12">
+                <div style="background: rgba(63,185,80,0.1); border: 1px solid var(--accent2); border-radius: 8px; padding: 10px;">
+                  <strong style="color: var(--accent2); font-size: 0.85rem;">Transport Layer (TCP)</strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Splits file into segments · Guarantees delivery · Port 5000</div>
+                </div>
+              </div>
+              <div class="col-12 text-center" style="font-size: 0.7rem; color: var(--text-muted);">▼</div>
+              <div class="col-12">
+                <div style="background: rgba(240,136,62,0.1); border: 1px solid var(--accent3); border-radius: 8px; padding: 10px;">
+                  <strong style="color: var(--accent3); font-size: 0.85rem;">Network Layer (IP)</strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Routes packets from client IP → server IP (127.0.0.1 locally)</div>
+                </div>
+              </div>
+              <div class="col-12 text-center" style="font-size: 0.7rem; color: var(--text-muted);">▼</div>
+              <div class="col-12">
+                <div style="background: rgba(139,148,158,0.1); border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
+                  <strong style="color: var(--text-muted); font-size: 0.85rem;">Data Link Layer (Ethernet/Wi-Fi)</strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Physical transmission as electrical/radio signals · MAC address</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- END RECEIVER PANEL -->
+
+</div>
+
+<!-- ── Footer ───────────────────────────────────────────────────────────────── -->
+<div class="footer mt-4">
+  Secure Cloud-Based File Sharing System · AES-256-CBC · HTTP/TCP · HuggingFace BART · Flask
+</div>
+
+<!-- ── Summary Modal ────────────────────────────────────────────────────────── -->
+<div class="modal fade" id="summaryModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="summaryModalLabel">📝 AI Summary</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="summaryModalBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

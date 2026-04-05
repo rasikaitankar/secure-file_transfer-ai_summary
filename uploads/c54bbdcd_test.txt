@@ -1,0 +1,43 @@
+HTTPS is just HTTP with encryption. The primary distinction between these two names is that HTTPS is more secure than HTTP since it uses TLS (SSL) encryption for all HTTP requests and responses, even the standard ones.
+
+HyperText Transfer Protocol (HTTP)
+Being a stateless application-layer protocol, HTTP does not retain session information between requests, which limits its ability to handle complex client-server interactions without additional mechanisms like cookies or sessions.
+
+HyperText Transfer Protocol (HTTP) is a protocol used which transfer hypertext over the Web.
+HTTP has been the most widely used protocol for data transfer over the Web.
+Hyper-text exchanged using HTTP goes as plain text which makes it less secure.
+The web server delivers data to the user in the form of web pages when the user initiates an HTTP request.
+Connection between the web browser and the server ends after the transaction is finished. This makes HTTP a stateless protocol.
+
+Advantages of HTTP
+Because fewer connections are running at once, it delivers reduced CPU and memory utilization.
+It allows requests and answers to be pipelined via HTTP.
+Because there are fewer TCP connections, it provides less network congestion.
+During the first stage of connection establishment, handshakes are exchanged. Because there is no handshaking, it provides lower latency for subsequent requests.
+Without terminating the TCP connection, it reports problems.
+Disadvantages of HTTP
+It is applicable to point-to-point connections.
+It isn't mobile-friendly.
+It sends more data than needed.
+It doesn't provide trustworthy exchange (in the absence of retry mechanism).
+When the client receives all the data it requires, the connection is not terminated. Therefore, the server won't be accessible during this time.
+Hypertext Transfer Protocol Secure (HTTPS)
+HTTPS ensures end-to-end encryption and authentication by leveraging TLS/SSL, safe guarding data from eavesdropping and tampering during transmission.
+
+HTTPS is used for secure communication as Hypertext Transfer Protocol (HTTP) doesn't.
+Data can be transferred using this protocol in an encrypted format.
+The HTTPS protocol is mostly utilized in situations when entering login credentials is necessary. Modern browsers like Chrome distinguish between the HTTP and HTTPS protocols based on distinct markings.
+HTTPS employs an encryption mechanism called Secure Sockets Layer (SSL), also known as Transport Layer Security, to enable encryption
+
+Advantages of HTTPS
+Provides in-transit data security.
+Shields your website from data breaches, phishing, and MITM attacks.
+Increases the visitors' trust to your website.
+Eliminates the "NOT Secure" alerts.
+Assist you in raising your website's ranking.
+Disadvantages of HTTPS
+While switching to HTTPS SSL certificate needs to be bought.
+Encrypting and decrypting data across HTTPS connections requires a lot of computation.
+There will be issues with caching some information over HTTPS. Public caching of those that previously took place won't happen again.
+Certain proxy servers and firewalls prevent users from accessing HTTPS websites. Both deliberate and inadvertent actions might result from this.
+If configuration issues encounter HTTP will be used by your website to obtain files rather than HTTPS.

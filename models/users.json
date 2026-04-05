@@ -1,0 +1,22 @@
+{
+  "alice": {
+    "password": "alice123",
+    "created": "2026-04-05T18:17:54.039587"
+  },
+  "bob": {
+    "password": "bob123",
+    "created": "2026-04-05T18:17:54.039613"
+  },
+  "admin": {
+    "password": "admin123",
+    "created": "2026-04-05T18:17:54.039616"
+  },
+  "user1": {
+    "password": "pass1",
+    "created": "2026-04-05T18:17:54.039617"
+  },
+  "user2": {
+    "password": "pass2",
+    "created": "2026-04-05T18:17:54.039618"
+  }
+}

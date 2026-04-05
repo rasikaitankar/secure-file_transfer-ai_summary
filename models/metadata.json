@@ -1,0 +1,42 @@
+{
+  "c54bbdcd_test.txt": {
+    "original_name": "test.txt",
+    "stored_name": "c54bbdcd_test.txt",
+    "sender_id": "user1",
+    "receiver_id": "user2",
+    "upload_time": "2026-03-21T00:23:35.050196",
+    "summary": "HTTPS is just HTTP with encryption. The primary distinction between these two names is that HTTPS is more secure than HTTP since it uses TLS (SSL) encryption for all HTTP requests and responses, even the standard ones. HyperText Transfer Protocol (HTTP)\nBeing a stateless application-layer protocol, HTTP does not retain session information between requests, which limits its ability to handle complex client-server interactions without additional mechanisms like cookies or sessions. HyperText Transfer Protocol (HTTP) is a protocol used which transfer hypertext over the Web. [Note: file was truncated to first 3000 characters for summarization.]",
+    "encrypted_path": "encrypted\\c54bbdcd_test.txt.enc",
+    "file_size_kb": 3.25
+  },
+  "ecc255a5_test.txt": {
+    "original_name": "test.txt",
+    "stored_name": "ecc255a5_test.txt",
+    "sender_id": "user1",
+    "receiver_id": "user2",
+    "upload_time": "2026-03-21T00:49:22.471200",
+    "summary": "Hypertext Transfer Protocol (HTTP) is a protocol used which transfer hypertext over the Web. HTTPS is just HTTP with encryption. HTTPS employs an encryption mechanism called Secure Sockets Layer (SSL) to enable encryption. [Note: file was truncated to first 3000 characters for summarization.]",
+    "encrypted_path": "encrypted\\ecc255a5_test.txt.enc",
+    "file_size_kb": 3.25
+  },
+  "ebb4476c_test.txt": {
+    "original_name": "test.txt",
+    "stored_name": "ebb4476c_test.txt",
+    "sender_id": "user1",
+    "receiver_id": "user2",
+    "upload_time": "2026-03-21T00:49:38.239448",
+    "summary": "Hypertext Transfer Protocol (HTTP) is a protocol used which transfer hypertext over the Web. HTTPS is just HTTP with encryption. HTTPS employs an encryption mechanism called Secure Sockets Layer (SSL) to enable encryption. [Note: file was truncated to first 3000 characters for summarization.]",
+    "encrypted_path": "encrypted\\ebb4476c_test.txt.enc",
+    "file_size_kb": 3.25
+  },
+  "e89b6bd2_New_Text_Document.txt": {
+    "original_name": "New_Text_Document.txt",
+    "stored_name": "e89b6bd2_New_Text_Document.txt",
+    "sender_id": "Rasika",
+    "receiver_id": "Maitreyee",
+    "upload_time": "2026-03-21T20:37:25.238597",
+    "summary": "File content: Hello World!!",
+    "encrypted_path": "encrypted\\e89b6bd2_New_Text_Document.txt.enc",
+    "file_size_kb": 0.01
+  }
+}

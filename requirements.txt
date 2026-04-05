@@ -1,0 +1,6 @@
+flask==3.0.0
+cryptography==41.0.7
+transformers==4.37.0
+torch==2.1.2
+sentencepiece==0.1.99
+Werkzeug==3.0.1
