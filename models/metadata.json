@@ -86,5 +86,17 @@
     "file_size_kb": 2.47,
     "drive_file_id": null,
     "storage": "local"
+  },
+  "09d85943_ngrok_start.py": {
+    "original_name": "ngrok_start.py",
+    "stored_name": "09d85943_ngrok_start.py",
+    "sender_id": "alice",
+    "receiver_id": "bob",
+    "upload_time": "2026-04-05T23:55:04.440846",
+    "summary": "\"\"\"\nngrok_start.py\n--------------\nHTTPS Tunnel via ngrok\n\nRun this script INSTEAD of python app.py to get:\n  - Local HTTP server on port 5000\n  - Public HTTPS URL (e.g. https://abc123.ngrok.io)\n\nNETWORKING CONCEPT \u2014 HTTPS / TLS:\n  HTTP sends data in plaintext. Anyone intercepting packets can read the data. HTTPS = HTTP + TLS (Transport Layer Security).",
+    "encrypted_path": "encrypted\\09d85943_ngrok_start.py.enc",
+    "file_size_kb": 2.47,
+    "drive_file_id": null,
+    "storage": "local"
   }
 }
